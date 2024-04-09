@@ -1,0 +1,4 @@
+WIDTH    = 1300	
+HEIGTH   = 720
+FPS      = 60
+TILESIZE = 48
