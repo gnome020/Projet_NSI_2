@@ -37,7 +37,7 @@ class Niveau_1:
                         elif type == 'Objet' :
                             Tile((x,y),[self.obstacles,self.sprite_visible],'objet')
                         elif type == 'portal':
-                            Tile((x,y),[self.obstacles,self.objets,self.sprite_visible],'portal')
+                            Tile((x,y),[self.objets],'portal')
 
 
         self.joueur = Joueur (self.game, (TILESIZE*3,TILESIZE*3),[self.sprite_visible],self.obstacles,self.objets)

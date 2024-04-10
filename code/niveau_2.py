@@ -20,9 +20,8 @@ class Niveau_2:
     def créer_carte(self):
 
         calques = {
-            'bordure' : lire_csv("../carte/Carte_Barrière.csv"),
-            'objet' : lire_csv("../carte/Carte_Objet.csv"),
-            'portal' : lire_csv("../carte/Carte_Portal.csv")
+            'bordure' : lire_csv("../carte/niveau_2/Carte_barrière.csv"),
+            'joueur'  : lire_csv("../carte/niveau_2/Carte_joueur.csv")
         }
 
         for type,calque in calques.items():
@@ -34,13 +33,11 @@ class Niveau_2:
 
                         if type == 'bordure' :
                             Tile((x,y),[self.obstacles],'invisible')
-                        elif type == 'Objet' :
-                            Tile((x,y),[self.obstacles,self.sprite_visible],'objet')
-                        elif type == 'portal':
-                            Tile((x,y),[self.obstacles,self.objets,self.sprite_visible],'portal')
+                        elif type == 'joueur' :
+                            self.joueur = Joueur (self.game, (x,y),[self.sprite_visible],self.obstacles,self.objets)
 
 
-        self.joueur = Joueur (self.game, (TILESIZE*3,TILESIZE*3),[self.sprite_visible],self.obstacles,self.objets)
+        
 
     def run(self):
 		# update and draw the game
@@ -58,7 +55,7 @@ class GroupesCamera(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
         # création du fond
-        self.fond_surface = pygame.image.load('../graphics/TilesetWater.png').convert()
+        self.fond_surface = pygame.image.load('../graphics/Carte_2.png').convert()
         self.fond_rect = self.fond_surface.get_rect(topleft = (0,0))
 
     def custom_draw(self,joueur):
