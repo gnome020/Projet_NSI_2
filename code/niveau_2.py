@@ -2,22 +2,27 @@ import pygame
 from paramètre import *
 from aide import *
 from tile import Tile
-from Joueur import Joueur
+from joueur import Joueur
 
-class Niveau:
-    def __init__(self):
-        
-        self.display_surface = pygame.display.get_surface()
+class Niveau_2:
+    def __init__(self,game):
+        self.display = pygame.display.get_surface()
 
         self.sprite_visible = GroupesCamera()
         self.obstacles = pygame.sprite.Group()
+        self.objets = pygame.sprite.Group()
+        self.game = game
+
+
 
         self.créer_carte()
 
     def créer_carte(self):
 
         calques = {
-            'bordure' : lire_csv("../carte/Carte_Barrière.csv")
+            'bordure' : lire_csv("../carte/Carte_Barrière.csv"),
+            'objet' : lire_csv("../carte/Carte_Objet.csv"),
+            'portal' : lire_csv("../carte/Carte_Portal.csv")
         }
 
         for type,calque in calques.items():
@@ -29,8 +34,14 @@ class Niveau:
 
                         if type == 'bordure' :
                             Tile((x,y),[self.obstacles],'invisible')
+                        elif type == 'Objet' :
+                            Tile((x,y),[self.obstacles,self.sprite_visible],'objet')
+                        elif type == 'portal':
+                            Tile((x,y),[self.obstacles,self.objets,self.sprite_visible],'portal')
 
-        self.joueur = Joueur ( (TILESIZE*3,TILESIZE*3),[self.sprite_visible],self.obstacles)
+
+        self.joueur = Joueur (self.game, (TILESIZE*3,TILESIZE*3),[self.sprite_visible],self.obstacles,self.objets)
+
     def run(self):
 		# update and draw the game
         self.sprite_visible.custom_draw(self.joueur)
@@ -47,7 +58,7 @@ class GroupesCamera(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
         # création du fond
-        self.fond_surface = pygame.image.load('../graphics/carte.png').convert()
+        self.fond_surface = pygame.image.load('../graphics/TilesetWater.png').convert()
         self.fond_rect = self.fond_surface.get_rect(topleft = (0,0))
 
     def custom_draw(self,joueur):
@@ -74,3 +85,4 @@ class GroupesCamera(pygame.sprite.Group):
         for sprite in sorted(self.sprites(),key = lambda sprite : sprite.rect.centery):
             self.display.blit(sprite.image,sprite.rect)
             pygame.draw.rect(self.display,'red',sprite.hitbox,1)
+

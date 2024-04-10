@@ -1,6 +1,7 @@
 import pygame,sys
 from paramètre import *
-from niveau import *
+from niveau_1 import Niveau_1
+from niveau_2 import Niveau_2
 
 
 class Game:
@@ -11,9 +12,11 @@ class Game:
         self.ecran=pygame.display.set_mode((WIDTH,HEIGTH))
         pygame.display.set_caption("Nom à trouver")
         self.clock = pygame.time.Clock()
+        self.niveau_en_cours = 0
 
-        self.niveau=Niveau()
-    
+        self.niveau = [Niveau_1(self),  Niveau_2(self)]
+
+
     def run(self):
         while True:
             for event in pygame.event.get():
@@ -21,9 +24,9 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         sys.exit()
-            
             self.ecran.fill('black')
-            self.niveau.run()
+            print(self.niveau_en_cours)
+            self.niveau[self.niveau_en_cours].run()
             pygame.display.update()
             self.clock.tick(FPS)
     
