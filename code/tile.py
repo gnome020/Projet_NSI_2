@@ -6,9 +6,6 @@ class Tile(pygame.sprite.Sprite):
         super().__init__(groupes)
         self.type = type
         self.image = surface
-        if type  == 'objet':
-            self.rect = self.image.get_rect(topleft = pos)
-        else:
-            self.rect = self.image.get_rect(topleft = pos)
+        self.rect = self.image.get_rect(topleft = pos)
         self.hitbox = self.rect.inflate(0,-5)
 

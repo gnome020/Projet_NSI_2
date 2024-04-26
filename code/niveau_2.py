@@ -21,7 +21,8 @@ class Niveau_2:
 
         calques = {
             'bordure' : lire_csv("../carte/niveau_2/Carte_barrière.csv"),
-            'joueur'  : lire_csv("../carte/niveau_2/Carte_joueur.csv")
+            'joueur'  : lire_csv("../carte/niveau_2/Carte_joueur.csv"),
+            'portal' : lire_csv("../carte/niveau_2/Carte_portal.csv"),
         }
 
         for type,calque in calques.items():
@@ -34,7 +35,9 @@ class Niveau_2:
                         if type == 'bordure' :
                             Tile((x,y),[self.obstacles],'invisible')
                         elif type == 'joueur' :
-                            self.joueur = Joueur (self.game, (x,y),[self.sprite_visible],self.obstacles,self.objets)
+                            self.joueur = Joueur ((x,y),[self.sprite_visible],self.obstacles,self.objets,True,self.game,self)
+                        elif type == 'portal' :
+                            Tile((x,y),[self.objets,self.obstacles],'portal')
 
 
         

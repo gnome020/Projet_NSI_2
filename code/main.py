@@ -1,8 +1,9 @@
 import pygame,sys
+
 from paramètre import *
 from niveau_1 import Niveau_1
 from niveau_2 import Niveau_2
-
+pygame.init()
 
 class Game:
     def __init__(self):
@@ -25,7 +26,6 @@ class Game:
                         pygame.quit()
                         sys.exit()
             self.ecran.fill('black')
-            print(self.niveau_en_cours)
             self.niveau[self.niveau_en_cours].run()
             pygame.display.update()
             self.clock.tick(FPS)
