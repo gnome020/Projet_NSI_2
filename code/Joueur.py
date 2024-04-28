@@ -3,6 +3,7 @@ import pygame.display
 from paramètre import *
 from affichage import *
 from aide import *
+from random import choice
 class Joueur(pygame.sprite.Sprite):
     def __init__(self, pos,groupes,obstacles,objets,statut,game,niveau):
         super().__init__(groupes)
@@ -28,13 +29,19 @@ class Joueur(pygame.sprite.Sprite):
         self.vitesse = 5
         self.interaction = False
         
+        self.switching_a = False
+        self.switching_tab = False
+        self.cd = 500
+        self.temp_statut = []
+        self.temp_image = []
+
         self.inventaire = []
 
     def import_player_assets(self):
         chemin_perso = '../graphics/joueur/'
         self.animations = {'haut': [],'bas': [],'gauche': [],'droite': []
                            ,'haut_idle' : [] , 'bas_idle' : [], 'gauche_idle' : [],
-                            'droite_idle' : []}
+                            'droite_idle' : [], 'stop': []}
 
         for animation in self.animations.keys():
             chemin_complet = chemin_perso + animation
@@ -44,13 +51,18 @@ class Joueur(pygame.sprite.Sprite):
 
 		# idle status
         if self.direction.x == 0 and self.direction.y == 0:
-            if not 'idle' in self.image_statut:
+            if 'stop' in self.image_statut:
+                pass
+            elif not 'idle' in self.image_statut:
                 self.image_statut = self.image_statut + '_idle'
 
 
     def input(self):
         key = pygame.key.get_pressed()
         if self.statut == True:
+            if self.temp_image != []:
+                self.image_statut= self.temp_image[0]
+                self.temp_image = []
 
             ## Mouvement
 
@@ -85,49 +97,76 @@ class Joueur(pygame.sprite.Sprite):
                 self.dupli = True
             else:
                 self.dupli = False
+        else:   
+            self.direction *= 0
+            self.temp_image.append(self.image_statut)
+            self.image_statut='stop'
+
             
         if key[pygame.K_a]:
-            self.statut = not self.statut
+            if not self.switching_a:
+                self.switching_a = True
+                self.switch_time = pygame.time.get_ticks()
+                self.statut = not self.statut
+        if key[pygame.K_TAB]:
+            self.temp_statut.append(self.statut)
+            self.statut = True
+            self.switching_tab = True
+        else:
+            if self.switching_tab:
+                self.switching_tab = False
+                self.statut=self.temp_statut[0]
+                self.temp_statut = []
+
+
+        
 
     
+    def cooldown(self):
+        if self.switching_a:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.switch_time >= self.cd:
+                self.switching_a = False
 
 
-    def move(self,vitesse):
-        if self.statut :
-            if self.niveau.camera.move(self.direction).collidelist(self.niveau.cadre) == -1:
-                
-                if self.direction.magnitude() != 0:
+    def main_move(self,vitesse):
+            if self.direction.magnitude() != 0:
                     self.direction = self.direction.normalize()
+
+            self.hitbox.x += self.direction.x * vitesse
+            self.colisions('horizontale')
+            self.hitbox.y += self.direction.y * vitesse
+            self.colisions('verticale')
+            self.rect.center = self.hitbox.center
+
+            if self.statut:
                 self.niveau.camera.center = self.hitbox.center
 
-                self.hitbox.x += self.direction.x * vitesse
-                self.colisions('horizontale')
-                self.hitbox.y += self.direction.y * vitesse
-                self.colisions('verticale')
-                self.rect.center = self.hitbox.center
+    def alt_move(self,vitesse):
+        for sprite in self.niveau.tout:
+            sprite.hitbox.x -= self.direction.x * vitesse
+            self.colisions('horizontale','alt')
+            sprite.hitbox.y -= self.direction.y * vitesse
+            self.colisions('verticale','alt')
+            pygame.draw.rect(self.display,'green',sprite.hitbox)
+        self.niveau.sprite_visible.fond_rect.x -= self.direction.x * vitesse
+        self.niveau.sprite_visible.fond_rect.y -= self.direction.y * vitesse
+        self.niveau.clone.hitbox.x  -= self.direction.x * vitesse
+        self.niveau.clone.hitbox.y  -= self.direction.y * vitesse
+
             
-            else:
-                pass
+    def camera_check(self):
+        if self.niveau.camera.move(self.direction*4).collidelist(list(self.niveau.cadre.values())) != -1:
+            return True
+        return False
 
-
-    def animer(self):
-        if self.statut:
-            animation = self.animations[self.image_statut]
-            
-            self.indice_animation += self.vitesse_animation
-            if self.indice_animation >= len(animation):
-                self.indice_animation = 0
-
-            self.image = animation[int(self.indice_animation)]
-            self.image = pygame.transform.scale(self.image,(62,62))
-            self.rect = self.image.get_rect(center = self.hitbox.center)
     
-    def colisions(self,direction):
+    def colisions(self,direction,type = 'main'):
         if direction == 'horizontale':
             for sprite in self.obstacles:
                     if sprite.hitbox.colliderect(self.hitbox):
                         if self.direction.x > 0 : # vers la droite
-                            self.hitbox.right = sprite.hitbox.left
+                             self.hitbox.right = sprite.hitbox.left
                         elif self.direction.x < 0 : # vers la gauche
                             self.hitbox.left = sprite.hitbox.right
                 
@@ -139,8 +178,23 @@ class Joueur(pygame.sprite.Sprite):
                             self.hitbox.bottom = sprite.hitbox.top
                         elif self.direction.y < 0 : # vers le haut
                             self.hitbox.top = sprite.hitbox.bottom
+                            
+
+                
+
+
 
     
+    def animer(self):
+            animation = self.animations[self.image_statut]
+            
+            self.indice_animation += self.vitesse_animation
+            if self.indice_animation >= len(animation):
+                self.indice_animation = 0
+
+            self.image = animation[int(self.indice_animation)]
+            self.image = pygame.transform.scale(self.image,(62,62))
+            self.rect = self.image.get_rect(center = self.hitbox.center)
                 
 
 
@@ -148,6 +202,10 @@ class Joueur(pygame.sprite.Sprite):
     def update(self):
         self.niveau.interaction_objet()
         self.input()
+        self.cooldown()
         self.recup_status()
         self.animer()
-        self.move(self.vitesse)
+        if self.camera_check():
+            self.alt_move(self.vitesse)
+        else:
+            self.main_move(self.vitesse)

@@ -9,10 +9,11 @@ class Niveau_1:
     def __init__(self,game):
         self.display = pygame.display.get_surface()
 
+        # ARRANGEMENT ELEMENTS
         self.sprite_visible = GroupesCamera()
         self.obstacles = pygame.sprite.Group()
         self.objets = pygame.sprite.Group()
-        self.tout = pygame.sprite.Group()
+        self.tout = []
         self.game = game
 
         self.créer_carte()
@@ -20,13 +21,11 @@ class Niveau_1:
         
 
     def get_tout(self):
-        self.tout.add(self.sprite_visible.fond_rect)
-        for sprite in self.objets.sprites() + self.sprite_visible.sprites() + self.obstacles.sprites():
-            if not self.tout.has(sprite):
-                print(sprite,"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-                self.tout.add(sprite)
-        print(self.tout.sprites)
-
+        #self.tout.append(self.sprite_visible.fond_rect)
+        #self.tout.append(self.clone)
+        for sprite in self.objets.sprites() + self.obstacles.sprites():
+            if sprite not in self.tout:
+                self.tout.append(sprite)
 
     def créer_carte(self):
 
@@ -47,9 +46,10 @@ class Niveau_1:
                         y = l_indice * TILESIZE
 
                         if type == 'barrière' :
-                            Tile((x,y),[self.obstacles,self.sprite_visible,self.tout],'invisible')
+                            Tile((x,y),[self.obstacles],'invisible')
                         elif type == 'joueur':
                             self.joueur = Joueur ( (x,y),[self.sprite_visible],self.obstacles,self.objets,True,self.game,self)
+                            self.joueur_actif = self.joueur
                         elif type == 'clone' :
                             self.clone = Joueur ( (x,y),[self.sprite_visible],self.obstacles,self.objets,False,self.game,self)
                         elif type == 'clé' :
@@ -62,35 +62,34 @@ class Niveau_1:
         
 
         # création caméra
-        self.camera =  self.joueur.rect.inflate(150,150)
+        self.camera =  self.joueur.rect.inflate(200,200)
         self.camera.center = self.joueur.rect.center
 
         # créarion cadre
         haut = self.display.get_clip()
         haut.bottom = haut.top
-        haut.inflate_ip(0,5)
+        haut.inflate_ip(0,1)
 
         bas = self.display.get_clip()
         bas.top = bas.bottom
-        bas.inflate_ip(0,5)
+        bas.inflate_ip(0,1)
 
         gauche = self.display.get_clip()
         gauche.right = gauche.left
-        gauche.inflate_ip(5,0)
+        gauche.inflate_ip(1,0)
 
         droite = self.display.get_clip()
         droite.left = droite.right
-        droite.inflate_ip(5,0)
+        droite.inflate_ip(1,0)
 
-        self.cadre = [haut,bas,droite,gauche]
-
+        self.cadre = {'haut': haut,'bas':bas,'gauche':gauche,'droite':droite}
         self.get_tout()
     
 
 
     def interaction_objet(self):
-        for i in self.cadre:
-            pygame.draw.rect(self.display,'green',i)
+        for i in self.cadre.keys():
+            pygame.draw.rect(self.display,'green',self.cadre[i])
         pygame.draw.rect(self.display,'blue',self.camera,1)
         for sprite in self.objets.sprites() :
             if sprite.type == 'clé':
@@ -158,5 +157,3 @@ class GroupesCamera(pygame.sprite.Group):
 
         for sprite in sorted(self.sprites(),key = lambda sprite : sprite.rect.centery):
             self.display.blit(sprite.image,sprite.rect)
-            pygame.draw.rect(self.display,'red',sprite.rect,1)
-        

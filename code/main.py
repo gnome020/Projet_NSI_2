@@ -3,6 +3,7 @@ import pygame,sys
 from paramètre import *
 from niveau_1 import Niveau_1
 from niveau_2 import Niveau_2
+from affichage import debug
 pygame.init()
 
 class Game:
@@ -20,6 +21,7 @@ class Game:
 
     def run(self):
         while True:
+            
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
