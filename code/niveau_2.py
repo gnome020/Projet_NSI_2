@@ -2,7 +2,7 @@ import pygame
 from paramètre import *
 from aide import *
 from tile import Tile
-from joueur import Joueur
+from Joueur import Joueur
 
 class Niveau_2:
     def __init__(self,game):

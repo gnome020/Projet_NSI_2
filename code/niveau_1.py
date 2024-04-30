@@ -2,7 +2,7 @@ import pygame
 from paramètre import *
 from aide import *
 from tile import Tile
-from joueur import Joueur
+from Joueur import Joueur
 from affichage import debug
 
 class Niveau_1:
