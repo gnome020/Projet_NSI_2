@@ -12,7 +12,7 @@ class Game:
         # paramètre genérale
         pygame.init()
         self.ecran=pygame.display.set_mode((WIDTH,HEIGTH))
-        pygame.display.set_caption("Nom à trouver")
+        pygame.display.set_caption("Lost soul")
         self.clock = pygame.time.Clock()
         self.niveau_en_cours = 0
 

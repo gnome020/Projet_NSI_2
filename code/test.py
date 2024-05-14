@@ -1,2 +1,2 @@
-d = {  'a' : 2,'f0':8}
-print(list(d.values()))
+l = [3,5]
+print(l.reverse())

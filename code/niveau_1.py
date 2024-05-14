@@ -4,6 +4,7 @@ from aide import *
 from tile import Tile
 from joueur import Joueur
 from affichage import debug
+from math import gcd
 
 class Niveau_1:
     def __init__(self,game):
@@ -14,6 +15,7 @@ class Niveau_1:
         self.obstacles = pygame.sprite.Group()
         self.objets = pygame.sprite.Group()
         self.tout = []
+        self.current_joueur = []
         self.game = game
 
         self.créer_carte()
@@ -27,6 +29,27 @@ class Niveau_1:
             if sprite not in self.tout:
                 self.tout.append(sprite)
 
+
+    def centrage(self):
+        xA, yA = self.camera.centerx , self.camera.centery
+        xB,yB = self.display.get_clip().centerx ,self.display.get_clip().centery
+        vecteur = pygame.math.Vector2()
+        vecteur.x = (xB - xA)
+        vecteur.y = (yB - yA)
+
+
+
+        
+        self.sprite_visible.fond_rect.x += vecteur.x
+        self.sprite_visible.fond_rect.y += vecteur.y
+        for sprite in self.tout:
+            sprite.hitbox.x += vecteur.x
+            sprite.hitbox.y += vecteur.y
+        self.current_joueur[1].hitbox.x  += vecteur.x
+        self.current_joueur[1].hitbox.y  += vecteur.y
+        self.current_joueur[0].hitbox.x  += vecteur.x
+        self.current_joueur[0].hitbox.y  += vecteur.y
+        
     def créer_carte(self):
 
         calques = {
@@ -49,9 +72,10 @@ class Niveau_1:
                             Tile((x,y),[self.obstacles],'invisible')
                         elif type == 'joueur':
                             self.joueur = Joueur ( (x,y),[self.sprite_visible],self.obstacles,self.objets,True,self.game,self)
-                            self.joueur_actif = self.joueur
+                            self.current_joueur.append(self.joueur)
                         elif type == 'clone' :
                             self.clone = Joueur ( (x,y),[self.sprite_visible],self.obstacles,self.objets,False,self.game,self)
+                            self.current_joueur.append(self.clone)
                         elif type == 'clé' :
                             Tile((x,y),[self.objets],'clé')
                         elif type == 'sortie':
@@ -62,7 +86,7 @@ class Niveau_1:
         
 
         # création caméra
-        self.camera =  self.joueur.rect.inflate(200,200)
+        self.camera =  self.joueur.rect.inflate(500,500)
         self.camera.center = self.joueur.rect.center
 
         # créarion cadre
@@ -85,28 +109,29 @@ class Niveau_1:
         self.cadre = {'haut': haut,'bas':bas,'gauche':gauche,'droite':droite}
         self.get_tout()
     
-
+        self.centrage()
 
     def interaction_objet(self):
-        for i in self.cadre.keys():
-            pygame.draw.rect(self.display,'green',self.cadre[i])
-        pygame.draw.rect(self.display,'blue',self.camera,1)
+
         for sprite in self.objets.sprites() :
             if sprite.type == 'clé':
-                if sprite.hitbox.colliderect(self.joueur.hitbox) :
-                    debug("press E",self.joueur.hitbox.x+80,self.joueur.hitbox.y-20)
-                    if self.joueur.interaction:
-                        self.joueur.inventaire.append('clé')
+                if sprite.hitbox.colliderect(self.current_joueur[0].hitbox) :
+                    debug("press E",self.current_joueur[0].hitbox.x+80,self.current_joueur[0].hitbox.y-20)
+                    if self.current_joueur[0].interaction:
+                        self.current_joueur[0].inventaire.append('clé')
                         self.objets.remove(sprite)
 
             if sprite.type == 'porte':
-                if sprite.hitbox.colliderect(self.joueur.hitbox.move(self.joueur.direction)):
-                    if 'clé' in self.joueur.inventaire and self.joueur.interaction:
+                if sprite.hitbox.colliderect(self.current_joueur[0].hitbox.move(self.current_joueur[0].direction)):
+                    if 'clé' in self.current_joueur[0].inventaire and self.current_joueur[0].interaction:
                         self.obstacles.remove(sprite)
 
             if sprite.type == 'sortie':
-                if self.joueur.hitbox.colliderect(sprite.hitbox) and self.clone.hitbox.colliderect(sprite.hitbox):
-                    self.game.niveau_en_cours = 1
+                if self.current_joueur[0].hitbox.colliderect(sprite.hitbox) :
+                    debug("True actif")
+                    if self.current_joueur[1].hitbox.colliderect(sprite.hitbox):
+                        debug("True passif",10,30)
+                        self.game.niveau_en_cours = 1
 
 
 
@@ -114,7 +139,7 @@ class Niveau_1:
 
     def run(self):
 		# update and draw the game
-        self.sprite_visible.custom_draw(self.joueur)
+        self.sprite_visible.custom_draw(self.current_joueur[0])
         self.sprite_visible.update()
 
 class GroupesCamera(pygame.sprite.Group):
