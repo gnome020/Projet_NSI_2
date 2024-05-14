@@ -14,9 +14,9 @@ def init_buttons():
         def draw(self, surface):
             surface.blit(self.image, self.rect)
 
-    x_resume_button = 100  # Remplacez par la position X désirée
-    y_resume_button = 100  # Remplacez par la position Y désirée
-    x_exit_button = 100   # Remplacez par la position X désirée
+    x_resume_button = 250  # Remplacez par la position X désirée
+    y_resume_button = 200  # Remplacez par la position Y désirée
+    x_exit_button = 800  # Remplacez par la position X désirée
     y_exit_button = 200   # Remplacez par la position Y désirée
 
     # Chemins d'accès aux images
