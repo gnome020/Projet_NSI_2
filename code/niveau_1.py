@@ -5,6 +5,7 @@ from tile import Tile
 from joueur import Joueur
 from affichage import debug
 from math import gcd
+from time import sleep
 
 class Niveau_1:
     def __init__(self,game):
@@ -18,7 +19,7 @@ class Niveau_1:
         self.current_joueur = []
         self.game = game
 
-        self.créer_carte()
+        self.creer_carte()
 
         
 
@@ -37,9 +38,6 @@ class Niveau_1:
         vecteur.x = (xB - xA)
         vecteur.y = (yB - yA)
 
-
-
-        
         self.sprite_visible.fond_rect.x += vecteur.x
         self.sprite_visible.fond_rect.y += vecteur.y
         for sprite in self.tout:
@@ -50,7 +48,72 @@ class Niveau_1:
         self.current_joueur[0].hitbox.x  += vecteur.x
         self.current_joueur[0].hitbox.y  += vecteur.y
         
-    def créer_carte(self):
+        check = self.joueur.check_sortie_cadre(self.sprite_visible.fond_rect) # voir la methode dans joueur
+        print(check)
+        liste_vecteur = []
+        compte = 0
+        if not check[0]:
+            for side in check[1:]:
+
+                if side == 'top':
+                    yA,yB = 0 , self.sprite_visible.fond_rect.top
+                    vecteur =pygame.math.Vector2()
+                    vecteur.x = (0)
+                    vecteur.y = (yB - yA)
+                    liste_vecteur.append(vecteur)
+                    compte += 1
+
+                elif side == 'bottom':
+                    yA,yB = HEIGTH , self.sprite_visible.fond_rect.bottom
+                    vecteur =pygame.math.Vector2()
+                    vecteur.x = (0)
+                    vecteur.y = (yB - yA)
+                    liste_vecteur.append(vecteur)
+                    compte += 1
+                elif side == 'left':
+                    xA,xB =  0 , self.sprite_visible.fond_rect.left
+                    vecteur =pygame.math.Vector2()
+                    vecteur.x = (xB - xA)
+                    vecteur.y = (0)
+                    liste_vecteur.append(vecteur)
+                    compte += 1
+                
+                elif side == 'right':
+                    xA,xB = WIDTH  , self.sprite_visible.fond_rect.right
+                    vecteur =pygame.math.Vector2()
+                    vecteur.x = (xB - xA)
+                    vecteur.y = (0)
+                    liste_vecteur.append(vecteur)
+                    compte += 1
+
+            vecteur = liste_vecteur[0]
+            if compte > 1:
+                vecteur += liste_vecteur[1]
+
+            self.sprite_visible.fond_rect.x -= vecteur.x
+            self.sprite_visible.fond_rect.y -= vecteur.y
+            for sprite in self.tout:
+                sprite.hitbox.x -= vecteur.x
+                sprite.hitbox.y -= vecteur.y
+            self.current_joueur[1].hitbox.x  -= vecteur.x
+            self.current_joueur[1].hitbox.y  -= vecteur.y
+            self.current_joueur[0].hitbox.x  -= vecteur.x
+            self.current_joueur[0].hitbox.y  -= vecteur.y
+
+                
+
+
+
+
+
+
+
+
+
+             
+            
+        
+    def creer_carte(self):
 
         calques = {
             'barrière' : lire_csv("../carte/niveau_1/Carte_barrière.csv"),

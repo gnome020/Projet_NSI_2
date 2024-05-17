@@ -60,7 +60,7 @@ class Joueur(pygame.sprite.Sprite):
     def input(self):
         key = pygame.key.get_pressed()
         if self.statut:
-            if self.temp_image != []:
+            if self.temp_image != []: # un fois au changement de personnage
                 if not self.switching_tab:
                     self.niveau.current_joueur.reverse()
                     self.niveau.camera.center = self.niveau.current_joueur[0].hitbox.center
@@ -122,16 +122,6 @@ class Joueur(pygame.sprite.Sprite):
                 self.temp_statut = []
 
 
-    def check_sortie_cadre(self):
-         if self.niveau.sprite_visible.fond_rect.top >= 0:
-              return True
-         if self.niveau.sprite_visible.fond_rect.bottom <= HEIGTH :
-              return True
-         if self.niveau.sprite_visible.fond_rect.left  >= 0 :
-              return True
-         if self.niveau.sprite_visible.fond_rect.right <= WIDTH:
-              return True
-         return False
 
     
     def cooldown(self):
@@ -142,21 +132,23 @@ class Joueur(pygame.sprite.Sprite):
 
 
     def main_move(self,vitesse):
-            if self.direction.magnitude() != 0:
-                    self.direction = self.direction.normalize()
+        if self.direction.magnitude() != 0:
+                self.direction = self.direction.normalize()
 
-            self.hitbox.x += self.direction.x * vitesse
-            self.colisions('horizontale')
-            self.hitbox.y += self.direction.y * vitesse
-            self.colisions('verticale')
-            self.rect.center = self.hitbox.center
+        self.hitbox.x += self.direction.x * vitesse
+        self.colisions('horizontale')
+        self.hitbox.y += self.direction.y * vitesse
+        self.colisions('verticale')
+        self.rect.center = self.hitbox.center
 
-            if self.statut:
-                self.niveau.camera.center = self.hitbox.center
+        if self.statut:
+            self.niveau.camera.center = self.hitbox.center
 
     def alt_move(self,vitesse):
         if self.direction.magnitude() != 0:
                     self.direction = self.direction.normalize()
+        
+
         for sprite in self.niveau.tout:
             sprite.hitbox.x -= self.direction.x * vitesse
             self.colisions('horizontale','alt')
@@ -166,14 +158,31 @@ class Joueur(pygame.sprite.Sprite):
         self.niveau.sprite_visible.fond_rect.y -= self.direction.y * vitesse
         self.niveau.current_joueur[1].hitbox.x  -= self.direction.x * vitesse
         self.niveau.current_joueur[1].hitbox.y  -= self.direction.y * vitesse
-        self.niveau.camera.center = self.hitbox.center
+        if self.statut:
+            self.niveau.camera.center = self.hitbox.center
 
             
     def camera_check(self):
+        if self.niveau.camera.collidelist(list(self.niveau.cadre.values())) != -1:
+             pass # CONTINUER ICI
         if self.niveau.camera.move(self.direction*10).collidelist(list(self.niveau.cadre.values())) != -1:
             return True
         return False
     
+    
+    def check_sortie_cadre(self,rect):
+         L = [False]
+         if rect.top >= 0:
+              L.append('top')
+         if rect.bottom <= HEIGTH :
+              L.append('bottom')
+         if rect.left  >= 0 :
+              L.append('left')
+         if rect.right <= WIDTH:
+              L.append('right')
+         if L != [False]:
+              return L
+         return [True]
 
         
 
@@ -218,13 +227,14 @@ class Joueur(pygame.sprite.Sprite):
 
 
     def update(self):
+        pygame.draw.rect(self.display,'blue',self.niveau.camera,1)
         self.niveau.interaction_objet()
         self.input()
         self.cooldown()
         self.recup_status()
         self.animer()
-        debug(self.check_sortie_cadre())
-        if self.camera_check()   :#and not self.check_sortie_cadre():
+        debug((self.camera_check(), self.check_sortie_cadre(self.niveau.sprite_visible.fond_rect.move(-self.direction * self.vitesse))[0]))
+        if self.camera_check() and not self.check_sortie_cadre(self.niveau.sprite_visible.fond_rect.move(-self.direction * self.vitesse))[0]:
             self.alt_move(self.vitesse)
         else:
             self.main_move(self.vitesse)
